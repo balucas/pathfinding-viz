@@ -3,15 +3,16 @@ var height = 14;
 var width = 20;
 var startCoord = [2,13];
 var endCoord = [18,1];
+var weight = 1.0;
 var openSet = [];
 var closedSet = [];
 
 var grid = [];
-init();
+initGrid();
 paint();
 search();
 
-function init(){
+function initGrid(){
   for(var y = 0 ; y < height ; y++){
     var newRow = [];
     for(var x = 0 ; x < width ; x++){
@@ -33,7 +34,7 @@ function init(){
         newNode.parent = null;
       }else{
         newNode.g = 1;
-        newNode.h = (Math.abs(x - endCoord[0]) + Math.abs(y - endCoord[1])) *1;  //Calculate Manhattan distance
+        newNode.h = (Math.abs(x - endCoord[0]) + Math.abs(y - endCoord[1])) * weight;  //Calculate Manhattan distance
         newNode.f = newNode.g + newNode.h;                                  //Total f(n)
         newNode.coord = [x,y];
         newNode.state = 'empty';
