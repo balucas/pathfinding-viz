@@ -1,8 +1,8 @@
 
-var height = 10;
-var width = 12;
-var startCoord = [2,9];
-var endCoord = [2,1];
+var height = 14;
+var width = 20;
+var startCoord = [2,13];
+var endCoord = [18,1];
 var openSet = [];
 var closedSet = [];
 
@@ -21,20 +21,23 @@ function init(){
         newNode.h = Math.abs(x - endCoord[0]) + Math.abs(y - endCoord[1]);  //Calculate Manhattan distance
         newNode.f = newNode.g + newNode.h;                                  //Total f(n)
         newNode.coord = [x,y];
-        newNode.visited = true;
+        newNode.state = 'start';
+        newNode.parent = null;
         openSet.push(newNode);
       }else if(x == endCoord[0] && y == endCoord[1]){
         newNode.g = 1;
         newNode.h = 0;                                                      //End node has 0 h(n)
         newNode.f = newNode.g + newNode.h;                                  //Total f(n)
         newNode.coord = [x,y];
-        newNode.visited = false;
+        newNode.state = 'end';
+        newNode.parent = null;
       }else{
         newNode.g = 1;
-        newNode.h = Math.abs(x - endCoord[0]) + Math.abs(y - endCoord[1]);  //Calculate Manhattan distance
+        newNode.h = (Math.abs(x - endCoord[0]) + Math.abs(y - endCoord[1])) *1;  //Calculate Manhattan distance
         newNode.f = newNode.g + newNode.h;                                  //Total f(n)
         newNode.coord = [x,y];
-        newNode.visited = false;
+        newNode.state = 'empty';
+        newNode.parent = null;
       }
       newRow.push(newNode);
     }
@@ -45,9 +48,20 @@ function init(){
 function search(){
   //insert iteration of search algo here
   var currNode = openSet.shift();
+
+  //if endNode reached, backtrack
+  if(currNode.h == 0){
+    while(currNode.parent != null){
+      currNode = currNode.parent;
+      currNode.state = 'path';
+    }
+    debugger;
+    paint();
+    return null;
+  }
+
   closedSet.push(currNode);
-  debugger;
-  grid[currNode.coord[1]][currNode.coord[0]].visited = true;
+  grid[currNode.coord[1]][currNode.coord[0]].state = 'visited';
 
   //check if node is on edge of grid
   if(currNode.coord[1] > 0){            //check top
@@ -70,18 +84,17 @@ function search(){
     checkNode(currNode, right);
   }
 
-
   paint();
   window.setTimeout(function(){
     //continue if openset is not empty
     if(openSet.length > 0){
       search();
     }
-  }, 500);
+  }, 50);
 }
 
 function checkNode(currNode, neighborNode){
-  if(!openSet.includes(neighborNode)){
+  if(!openSet.includes(neighborNode) && !closedSet.includes(neighborNode)){
     //If not traversed yet, set parent to currNode, calculate f, & add to openSet
     neighborNode.parent = currNode;
     neighborNode.g += currNode.g;
@@ -123,11 +136,13 @@ function paint(){
       ctx.beginPath();
       ctx.rect(x * scale + 1, y * scale + 1, scale, scale);
       if(x == startCoord[0] && y == startCoord[1]){
-        ctx.fillStyle = 'green';
+        ctx.fillStyle = 'rgb(0, 0, 255)';
       }else if(x == endCoord[0] && y == endCoord[1]){
         ctx.fillStyle = 'red';
-      }else if(grid[y][x].visited){
-        ctx.fillStyle = 'orange'
+      }else if(grid[y][x].state == 'visited'){
+        ctx.fillStyle = 'rgb(0, 255, 255)';
+      }else if(grid[y][x].state == 'path'){
+        ctx.fillStyle = 'rgb(0, 255, 0)';
       }else{
         ctx.fillStyle = 'white';
       }
