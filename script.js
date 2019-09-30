@@ -1,12 +1,12 @@
 
-var height = 14;
-var width = 20;
+const height = 14;
+const width = 20;
 var startCoord = [2,13];
 var endCoord = [18,1];
 
 const scale = 50;
-const weight = 1.0;
-const stepCost = 0.9;
+const weight = 1.1;
+const stepCost = 1;
 
 var openSet = [];
 var closedSet = [];
@@ -20,7 +20,6 @@ var dragNode = '';
 var el = document.getElementById('canvas');
 el.addEventListener('mousedown',
   function(event){
-    debugger;
     var x = Math.floor(event.offsetX/scale);
     var y = Math.floor(event.offsetY/scale);
     nodeClicked(x,y);
@@ -31,7 +30,6 @@ el.addEventListener('mousedown',
 
 el.addEventListener('mousemove',
   function(event){
-    debugger;
     if(mousedown){
       var x = Math.floor(event.offsetX/scale);
       var y = Math.floor(event.offsetY/scale);
@@ -44,25 +42,51 @@ el.addEventListener('mousemove',
 el.addEventListener('mouseup',
   function(event){
     mousedown = false;
+    dragNode = '';
   })
-search();
+// search();
 
 function nodeClicked(x, y){
     var curr = grid[y][x];
-    if(curr.state == 'empty'){
-      var wallNode = {};
-      wallNode.g = null;
-      wallNode.h = null;
-      wallNode.coord = curr;
-      wallNode.state = 'wall';
-      wallNode.parent = null;
-      grid[y][x] = wallNode;
-    }else if(curr.state == 'wall'){
+    if(curr.state == 'empty' && (dragNode == '' || dragNode == 'wall')){
+      initNode('wall', x, y);
+      dragNode = 'wall';
+    }else if(curr.state == 'wall' && (dragNode == '' || dragNode == 'empty')){
+      initNode('empty', x, y);
+      dragNode = 'empty';
+    }else if((curr.state == 'start' && dragNode == '') || dragNode == 'start'){
 
     }
-
     paint();
+}
 
+function initNode(type, x, y){
+  var newNode = {};
+  if(type == 'wall'){
+    newNode.g = null;
+    newNode.h = null;
+    newNode.coord = [x, y];
+    newNode.state = 'wall';
+    newNode.parent = null;
+    grid[y][x] = newNode;
+  }else if(type == 'empty'){
+    newNode.g = stepCost;
+    newNode.h = (Math.abs(x - endCoord[0]) + Math.abs(y - endCoord[1])) * weight;  //Calculate Manhattan distance
+    newNode.f = newNode.g + newNode.h;                                  //Total f(n)
+    newNode.coord = [x,y];
+    newNode.state = 'empty';
+    newNode.parent = null;
+    grid[y][x] = newNode;
+  }else if(type == 'start'){
+    newNode.g = 0;
+    newNode.h = (Math.abs(x - endCoord[0]) + Math.abs(y - endCoord[1]) * weight);
+    newNode.f = newNode.g + newNode.h;
+    newNode.coord = [x, y];
+    newNode.state = 'start';
+    newNode.parent = null;
+  }
+
+  return newNode;
 }
 
 function initGrid(){
@@ -114,8 +138,6 @@ function search(){
     return null;
   }
 
-  closedSet.push(currNode);
-  grid[currNode.coord[1]][currNode.coord[0]].state = 'visited';
 
   //check neighbor nodes is on edge of grid
   if(currNode.coord[1] > 0){            //check top
@@ -146,6 +168,9 @@ function search(){
     }
   }
 
+  closedSet.push(currNode);
+  grid[currNode.coord[1]][currNode.coord[0]].state = 'visited';
+
   paint();
   window.setTimeout(function(){
     //continue if openset is not empty
@@ -163,11 +188,15 @@ function checkNode(currNode, neighborNode){
     neighborNode.f = neighborNode.g + neighborNode.h;
     pushBubble(neighborNode);
   }else{
-    if(neighborNode.g > currNode.g + 1){
+    if(neighborNode.g > currNode.g + stepCost){
       //If already traversed but current g value is lower, reparent & recalculate f
       neighborNode.parent = currNode;
       neighborNode.g = currNode.g + stepCost;
       neighborNode.f = neighborNode.g + neighborNode.h;
+    }else if(neighborNode.g < currNode.g + stepCost){
+      currNode.parent = neighborNode;
+      currNode.g = neighborNode.g + stepCost;
+      currNode.f = currNode.g + currNode.h;
     }
   }
 }
