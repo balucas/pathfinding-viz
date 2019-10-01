@@ -1,8 +1,8 @@
 
 const height = 14;
-const width = 20;
-var startCoord = [2,13];
-var endCoord = [18,1];
+const width = 25;
+var startCoord = [6,6];
+var endCoord = [19,13];
 
 const scale = 50;
 const weight = 1.01;
@@ -14,12 +14,16 @@ var closedSet = [];
 var grid = [];
 initGrid();
 paint();
-// preprocessGrid();
-// search();
+
+function start(){
+  preprocessGrid();
+  search();
+}
 
 var mousedown = false;
 var dragNode = '';
 var el = document.getElementById('canvas');
+
 el.addEventListener('mousedown',
   function(event){
     var x = Math.floor(event.offsetX/scale);
@@ -49,21 +53,30 @@ el.addEventListener('mouseup',
 
 function nodeClicked(x, y){
     var curr = grid[y][x];
+    var update = false;
     if(curr.state == 'empty' && (dragNode == '' || dragNode == 'wall')){
       grid[y][x] = initNode('wall', x, y);
       dragNode = 'wall';
+      paint();
     }else if(curr.state == 'wall' && (dragNode == '' || dragNode == 'empty')){
       grid[y][x] = initNode('empty', x, y);
       dragNode = 'empty';
-    }else if((curr.state == 'start' && dragNode == '') || dragNode == 'start'){
-      if(startCoord[0] != x && startCoord[1] != y){
-        debugger;
-        grid[startCoord[1]][startCoord[0]] = initNode('empty', x, y);
-        grid[y][x] = initNode('start');
+      paint();
+    }else if((curr.state == 'start' && dragNode == '') || (dragNode == 'start' && curr.state != 'end' && curr.state != 'wall')){
+      if(startCoord[0] != x || startCoord[1] != y){
+        grid[startCoord[1]][startCoord[0]] = initNode('empty', startCoord[0], startCoord[1]);
+        grid[y][x] = initNode('start', x, y);
+        paint();
       }
       dragNode = 'start';
+    }else if((curr.state == 'end' && dragNode == '') || (dragNode == 'end' && curr.state != 'start' && curr.state != 'wall')){
+      if(endCoord[0] != x || endCoord[1] != y){
+        grid[endCoord[1]][endCoord[0]] = initNode('empty', endCoord[0], endCoord[1]);
+        grid[y][x] = initNode('end', x, y);
+        paint();
+      }
+      dragNode = 'end';
     }
-    paint();
 }
 
 function initNode(type, x, y){
@@ -72,18 +85,18 @@ function initNode(type, x, y){
     newNode.coord = [x, y];
     newNode.state = 'wall';
     newNode.parent = null;
-  }else if(type == 'empty'){                      //Total f(n)
+  }else if(type == 'empty'){
     newNode.coord = [x,y];
     newNode.state = 'empty';
     newNode.parent = null;
   }else if(type == 'start'){
     newNode.coord = [x, y];
-    startCoord = newNode.coord;
+    startCoord = [x, y];
     newNode.state = 'start';
     newNode.parent = null;
   }else if(type == 'end'){
     newNode.coord = [x, y];
-    endCoord = newNode.coord;
+    endCoord = [x, y];
     newNode.state = 'end';
     newNode.parent = null;
   }
@@ -101,6 +114,7 @@ function preprocessGrid(){
       }else if(grid[y][x].state == 'end'){
         grid[y][x].g = stepCost;
         grid[y][x].h = 0;
+        grid[y][x].f = grid[y][x].g + grid[y][x].h;
       }else if(grid[y][x].state == 'start'){
         grid[y][x].g = 0;
         grid[y][x].h = Math.abs(x - endCoord[0]) + Math.abs(y - endCoord[1]) * weight;  //Calculate Manhattan distance
@@ -109,6 +123,7 @@ function preprocessGrid(){
       }else if(grid[y][x].state == 'wall'){
         grid[y][x].g = null;
         grid[y][x].h = null;
+        grid[y][x].f = null;
       }
     }
   }
@@ -140,7 +155,9 @@ function search(){
   if(currNode.h == 0){
     while(currNode.parent != null){
       currNode = currNode.parent;
-      currNode.state = 'path';
+      if(currNode.state != 'start'){
+        currNode.state = 'path';
+      }
     }
     debugger;
     paint();
@@ -178,7 +195,9 @@ function search(){
   }
 
   closedSet.push(currNode);
-  grid[currNode.coord[1]][currNode.coord[0]].state = 'visited';
+  if(currNode.state != 'start' && currNode.state != 'end'){
+    grid[currNode.coord[1]][currNode.coord[0]].state = 'visited';
+  }
 
   paint();
   window.setTimeout(function(){
@@ -186,7 +205,7 @@ function search(){
     if(openSet.length > 0){
       search();
     }
-  }, 10);
+  }, 50);
 }
 
 function checkNode(currNode, neighborNode){
@@ -234,9 +253,9 @@ function paint(){
       var ctx = c.getContext("2d");
       ctx.beginPath();
       ctx.rect(x * scale + 1, y * scale + 1, scale, scale);
-      if(x == startCoord[0] && y == startCoord[1]){
+      if(grid[y][x].state == 'start'){
         ctx.fillStyle = 'rgb(0, 0, 255)';
-      }else if(x == endCoord[0] && y == endCoord[1]){
+      }else if(grid[y][x].state == 'end'){
         ctx.fillStyle = 'red';
       }else if(grid[y][x].state == 'visited'){
         ctx.fillStyle = 'rgb(0, 255, 255)';
