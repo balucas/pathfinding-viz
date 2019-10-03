@@ -4,9 +4,11 @@
 
 An Interactive A* Search Algorithm Visualizer built with simple HTML & JavaScript.
 
+
 ## Getting Started
 
 It's an HTML & JS Project! Simply clone the repo & open index.html
+
 
 ### Usage
 
