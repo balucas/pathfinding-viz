@@ -1,18 +1,69 @@
 <!doctype html>
 <html>
 <head>
+<style>
+  .canvasContainer{
+    float:left;
+  }
+
+  .panelContainer{
+    margin-left: 1080px;
+    padding: 20px;
+    height: 559px;
+    width: 200px;
+
+    border-style: solid;
+    border-width: 1px;
+  }
+
+  .appContainer{
+    margin: auto;
+    padding-top: 170px;
+    width:fit-content;
+  }
+
+  button{
+    height: 30px;
+    width: 78px;
+    margin: 10px;
+    margin-top: 20px;
+  }
+
+  input{
+    float:right;
+    width: 70px;
+    font-size: 18px;
+  }
+
+  .inputContainer{
+    padding-top:15px;
+    padding-bottom: 15px;
+  }
+</style>
 
 </head>
 <body>
 
-    <div class="jumbotron">
-    </div>
-    <div class="canvasContainer" style="padding-left:50px">
-      <canvas id="canvas" height="750" width="1800">
+    <div class="appContainer">
+      <div class="canvasContainer" style="height:fit-content; width:fit-content">
+        <canvas id="canvas" height="610" width="1060">
 
-      </canvas>
+        </canvas>
+      </div>
+      <div class="panelContainer">
+        <div class="inputContainer">
+          Heuristic Weight:
+          <input id="heuristicWeight" type="number" name="heuristicWeight" min="0.00" step="0.01">
+        </div>
+        <div class="inputContainer">
+          Step Weight:
+          <input id="stepWeight" type="number" name="stepWeight" min="0.00" step="0.01">
+        </div>
+        <button onclick="start()">Start</button>
+        <button onclick="reset()">Reset</button>
+        <p id="panelMessage">Hello</p>
+      </div>
     </div>
-    <button onclick="start()">Start</button>
 
 </body>
 <script src="./script.js"></script>

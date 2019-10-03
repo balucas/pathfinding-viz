@@ -1,12 +1,13 @@
 
-const height = 14;
-const width = 25;
+const height = 20;
+const width = 35;
+const refreshRate = 20;
 var startCoord = [6,6];
 var endCoord = [19,13];
 
-const scale = 50;
-const weight = 1.01;
-const stepCost = 1.0;
+const scale = 30;
+var weight = 1.01;
+var stepCost = 1.0;
 
 var openSet = [];
 var closedSet = [];
@@ -20,6 +21,35 @@ function start(){
   search();
 }
 
+function reset(){
+  grid = [];
+  openSet = [];
+  closedSet = [];
+  initGrid();
+  paint();
+}
+
+var heuristicInput = document.getElementById('heuristicWeight');
+var stepInput = document.getElementById('stepWeight');
+
+heuristicInput.value = weight;
+stepInput.value = stepCost;
+
+heuristicInput.addEventListener('keyup',
+  function(event){
+    debugger;
+    weight = heuristicInput.value;
+  }, false);
+
+
+stepInput.addEventListener('keyup',
+  function(event){
+    debugger;
+    stepCost = stepInput.value;
+  }, false);
+
+
+//Add canvas interactivity
 var mousedown = false;
 var dragNode = '';
 var el = document.getElementById('canvas');
@@ -153,14 +183,18 @@ function search(){
 
   //if endNode reached, backtrack
   if(currNode.h == 0){
+    var pathCost = 0;
     while(currNode.parent != null){
       currNode = currNode.parent;
       if(currNode.state != 'start'){
         currNode.state = 'path';
       }
+      pathCost++;
     }
-    debugger;
     paint();
+    debugger;
+    var msg = document.getElementById('panelMessage');
+    msg.innerHTML = "Shortest path is " + pathCost + " steps";
     return null;
   }
 
@@ -205,7 +239,7 @@ function search(){
     if(openSet.length > 0){
       search();
     }
-  }, 50);
+  }, refreshRate);
 }
 
 function checkNode(currNode, neighborNode){
@@ -254,13 +288,13 @@ function paint(){
       ctx.beginPath();
       ctx.rect(x * scale + 1, y * scale + 1, scale, scale);
       if(grid[y][x].state == 'start'){
-        ctx.fillStyle = 'rgb(0, 0, 255)';
+        ctx.fillStyle = 'rgb(0, 108, 196)';
       }else if(grid[y][x].state == 'end'){
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = 'rgb(186, 0, 0)';
       }else if(grid[y][x].state == 'visited'){
-        ctx.fillStyle = 'rgb(0, 255, 255)';
+        ctx.fillStyle = 'rgb(128, 242, 255)';
       }else if(grid[y][x].state == 'path'){
-        ctx.fillStyle = 'rgb(0, 255, 0)';
+        ctx.fillStyle = 'rgb(91, 230, 70)';
       }else if(grid[y][x].state == 'wall'){
         ctx.fillStyle = 'rgb(50, 50, 50)';
       }else{
