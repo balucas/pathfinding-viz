@@ -1,4 +1,4 @@
-# A Star Visualizer
+# A* Search Visualizer
 
 ![A Star Demo](demo/Demo1.gif)
 
